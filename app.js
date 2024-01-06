@@ -1,17 +1,4 @@
-const sendEmail = require("./utils/emailManagement");
-
-
-sendEmail("kopitskyi.michail.49025@gmail.com", "Registration", "google.com")
-.then( res => console.log(res) )
-.catch( res =>  console.log(res) );
-
-
-
-
-
-
-
-
+require("dotenv").config();
 
 
 

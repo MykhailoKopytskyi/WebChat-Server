@@ -22,6 +22,11 @@ const configuration = {
         html: `<h1>Hello</h1> Click here to finish the process of ${keyWord}: ${URL}  `
       }
     }
+  },
+  validation: {
+    emailRegExp: new RegExp(/^(?=.{1,320}$)[A-Za-z0-9_.+-]{1,64}@[A-Za-z0-9-]{1,255}(?:\.[A-Za-z]{2,6}){0,2}.*$/),
+    passwordRegExp: new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,40}$/),
+    usernameRegExp:  new RegExp(/^[A-Za-z][A-Za-z\d]{7,29}$/)
   }
  
 }
