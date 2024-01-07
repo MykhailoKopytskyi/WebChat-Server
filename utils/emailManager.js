@@ -16,4 +16,4 @@ function sendEmail( recipientAddress, keyWord, URL  ) {
 }
 
 
-module.exports = sendEmail;
+  module.exports = {sendEmail};
