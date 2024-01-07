@@ -9,8 +9,6 @@ const AccountModel = {
       try {
         connection = await mysql2.createConnection( connectionObject );
         const [rows, fields] = await connection.execute("SELECT 1 FROM User WHERE username = ? OR email = ?", [username,email]);
-        console.log(rows)
-        console.log(fields)
         if( rows.length  == 0) { // If nothing is found, hence, email and username are unique
           return true;
         }
@@ -22,6 +20,26 @@ const AccountModel = {
       finally {
           connection.end(); // Close a DB connection
       }
+  },
+
+
+
+
+
+  createAccount: async (user_id, username,email, password) => {
+    let connection;
+    const connectionObject = configuration.database.connectionObject();
+    try {
+      connection = await mysql2.createConnection( connectionObject );
+      await connection.execute('INSERT INTO User (user_id, username, email, password) VALUES (?, ?, ?, ?)', [user_id,username,email,password]);
+      return true;
+    }
+    catch(e) {
+      return false;
+    }
+    finally {
+      connection.end();
+    }
   }
 
 }

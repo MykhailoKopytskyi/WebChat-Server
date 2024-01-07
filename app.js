@@ -11,7 +11,7 @@ const io = new Server(httpServer);
 const accountRoute = require("./routes/accountRoute");
 const chatsRoute = require("./routes/chatsRoute");
 
-app.use(express.json())
+app.use(express.json());
 
 app.use("/account", accountRoute);
 app.use("/chats", chatsRoute);
@@ -26,7 +26,8 @@ io.on("connection", (socket) => {
   
 });
 
-httpServer.listen(6000);
+httpServer.listen(parseInt(process.env.PORT));
+
 
 
 

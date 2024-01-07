@@ -5,6 +5,8 @@ const validationManager = require("../utils/validationManager");
 const encryptionManager = require("../utils/encryptionManager");
 const jwtManager = require("../utils/jwtManager");
 const emailManager = require("../utils/emailManager");
+const hashManager = require("../utils/hashManager");
+const crypto = require("crypto");
 
 const accountController = {
 
@@ -28,23 +30,23 @@ const accountController = {
       return;
     }
 
-    const encryptionPassword = encryptionManager.encrypt(password, process.env.PASSWORD_ENCRYPTION_KEY);
-    if( !encryptionPassword ) {
+    const encryptedPassword = encryptionManager.encrypt(password, process.env.PASSWORD_ENCRYPTION_KEY);
+    if( !encryptedPassword ) {
       response.status(500).send("Internal server error");
       return;
     }
     const credentials = {
       username,
       email,
-      encryptionPassword
+      password: encryptedPassword
     }
 
-    const token = jwtManager.createJWT(credentials, process.env.REGISTRATION_KEY, 3600 * 24);
+    const token = jwtManager.createJWT(credentials, process.env.REGISTRATION_KEY, parseInt(process.env.REGISTRATION_KEY_EXPIRE) );
     if(!token) {
       response.status(500).send("Internal server error");
       return;
     }
-    const URL = `http://localhost:6000/account/registration-confirmation?token=${token}`;
+    const URL = `http://localhost:${process.env.PORT}/account/registration-confirmation?token=${token}`;
 
     
     emailManager.sendEmail(email, "Registration", URL)
@@ -56,10 +58,38 @@ const accountController = {
       response.status(500).send("Internal server error. Failed to send an email");
       return;
     } )
-  } 
+  } ,
 
+
+
+
+
+
+  createAccount: async (request,response) => {
+    const token = request.query.token;
+    const authToken = jwtManager.authorise(token, process.env.REGISTRATION_KEY); // returns either data or false 
+    if(authToken == false) {
+      response.send("Token is either expired or invalid");
+      // response.redirect("http://localhost:5000/account/registration-confirmation?success=false")
+      // Line 71 will be tested only when the client side of the app is coded
+      // For now I will simplify down to Line 70
+      return;
+    }
+    const decryptedPassword = encryptionManager.decrypt(authToken.password, process.env.PASSWORD_ENCRYPTION_KEY);
+    const hashedPassword = await hashManager.hash(decryptedPassword);
+    const uuid = crypto.randomUUID();
+    const databaseResult = await accountModel.createAccount(uuid, authToken.username, authToken.email, hashedPassword);
+    // response.redirect(`http://localhost:5000/account/registration-confirmation?success=${databaseResult}`);
+    // Line 90 will be tested only when the client side of the app is coded
+    // For now I will simplify down to Lines 93-98
+    if(databaseResult) {
+      response.send("Account was created successfully");
+      return;
+    }
+    response.send("Account was not created. Try again");
+    return;
+  }
 }
-
 
 
 module.exports = accountController;

@@ -8,14 +8,12 @@ const accountController = require("../controllers/accountController");
 
 router.post("/", accountController.manageAccountCreation)  // manages account creation
 
+router.get("/registration-confirmation", accountController.createAccount) // creates an account
+
+
 router.delete( "/", (request, response) => {  // manages account removal
 
 } )
-
-
-router.get("/registration-confirmation", (request, response) => {   // creates account
-
-})
 
 router.get("/removal-confirmation", (request,response) => {   // removes an account
 
