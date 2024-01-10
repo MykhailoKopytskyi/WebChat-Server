@@ -11,21 +11,14 @@ router.post("/", accountController.manageAccountCreation)  // manages account cr
 router.get("/registration-confirmation", accountController.createAccount) // creates an account
 
 
-router.delete( "/", (request, response) => {  // manages account removal
+router.delete( "/", accountController.manageAccountRemoval ) // manages account removal
 
-} )
+router.get("/removal-confirmation", accountController.removeAccount ) // removes an account
 
-router.get("/removal-confirmation", (request,response) => {   // removes an account
 
-})
+router.post("/session", accountController.createSession ) // signs the user in
 
-router.post("/session", ( request, response ) => {    // signs in a user
-
-})
-
-router.delete( "/session", (request, response) => {  // signs out a user
-
-} )
+router.delete( "/session", accountController.removeSession ) // signs the user out
 
 
 module.exports = router;

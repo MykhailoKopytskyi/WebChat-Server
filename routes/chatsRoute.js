@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const chatsController = require("../controllers/chatsController");
 
-router.get("/hi", (request,response) => {
-  response.send("Hello!!!")
-})
+router.post("/", chatsController.createChat ) // create a chat
+
+router.delete("/", chatsController.removeChat ) // remove a chat
+
+router.get("/search", chatsController.searchUsers) // returns an array of users
 
 
 
