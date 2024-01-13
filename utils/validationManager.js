@@ -24,4 +24,26 @@ const usernameValidation = (username) => {
   return false;
 }
 
-module.exports={ emailValidation,passwordValidation, usernameValidation };
+const messageValidation = (message,userChats) => {
+  const messageText = message.messageText;
+  const messageID = message.messageID;
+
+  if(!messageText || messageText.length == 0 || messageText.length > 1024) {
+    return false;  // forged request
+  }
+  if(!messageID || messageID.length != 36) {
+    return false; // forged request
+  }
+  const chatID = message.chatID;
+  console.log(chatID)
+  for( let userChat of userChats ) { // iterate over the chats user is connected to
+    if(userChat == chatID) { // if the user is connected to the chat it is sending message to
+      console.log(userChat)
+      return true;
+    }
+  }
+  return false;
+}
+
+
+module.exports={ emailValidation,passwordValidation, usernameValidation, messageValidation };

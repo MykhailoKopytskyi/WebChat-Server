@@ -70,7 +70,7 @@ const AccountModel = {
     const connectionObject = configuration.database.connectionObject();
     try {
       connection = await mysql2.createConnection(connectionObject);
-      const [rows,fields] = await connection.execute( "SELECT password,user_id FROM User WHERE email=?", [email] );
+      const [rows,fields] = await connection.execute( "SELECT password,user_id as userID FROM User WHERE email=?", [email] );
       return rows;
     }
     catch(e) {

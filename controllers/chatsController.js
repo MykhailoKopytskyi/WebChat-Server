@@ -1,8 +1,9 @@
 require("dotenv").config();
+const cookie = require("cookie");
+
 const jwtManager = require("../utils/jwtManager");
 const chatIDManager = require("../utils/chatIDManager");
 const chatsModel = require("../models/chatsModel");
-
 
 
 
@@ -12,7 +13,7 @@ const chatsController = {
   createChat: async (request,response) => {
     const authToken = request.cookies.authToken;
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
-    if( authData == false ) {
+    if( !authData ) {
       response.status(401).send("Unauthorised");
       return;
     }
@@ -38,18 +39,18 @@ const chatsController = {
   removeChat: async (request, response) => {
     const authToken = request.cookies.authToken;
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
-    if( authData == false ) {
+    if( !authData ) {
       response.status(401).send("Unauthorised");
       return;
     }
     const userID = authData.userID;
     const chatID = request.body.chatID;
-    if( chatID === undefined || chatID.length !=72) { // all chatID are of length 72
+    if( !chatID || chatID.length !=72) { // all chatID are of length 72
       response.status(400).send("Forged request");
       return;
     }
     const databaseResult = await chatsModel.removeChat(userID,chatID);
-    if( databaseResult == false ) {
+    if( !databaseResult ) {
       response.status(400).send("Bad request. Chat does not exist");
       return;
     }
@@ -62,7 +63,7 @@ const chatsController = {
   searchUsers: async(request, response) => {
     const authToken = request.cookies.authToken;
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
-    if( authData == false ) {
+    if( !authData ) {
       response.status(401).send("Unauthorised");
       return;
     }
@@ -70,7 +71,7 @@ const chatsController = {
     const searchedUsername = request.query.username;
 
     if(!searchedUsername.trim()) {
-      response.send("Nothing is found");
+      response.status(200).send("Nothing is found");
       return;
     }
     const databaseResult = await chatsModel.searchUsers(searchedUsername, userID);
@@ -80,7 +81,45 @@ const chatsController = {
     }
     response.status(200).send(databaseResult);
     return;
-  }
+  },
+
+
+
+  connectToChats: async (socket) =>{
+    let authToken;
+    try {
+      const cookies = socket.handshake.headers.cookie;
+      authToken = cookie.parse(cookies).authToken;
+    }
+    catch(e) {
+      socket.emit("error", "Unauthorised");
+      socket.disconnect();
+      return false;
+    }
+  
+    const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
+    if( !authData ) {
+      socket.emit("error", "Unauthorised");
+      socket.disconnect();
+      return false;
+    }
+    const userID = authData.userID;
+    const dataSetup = await chatsModel.connectToChats(userID);
+    if( !dataSetup ) {
+      socket.emit("error", "Internal server error");
+      socket.disconnect();
+      return false;
+    }
+    const chats = dataSetup.chats;
+    for( let i = 0; i < chats.length; i++ ) {
+      const chatID = chats[i].chatID;
+      socket.join(chatID); // connect each user to its room
+    }
+    socket.emit("initial-setup", dataSetup);
+    return userID;
+  } 
+
+
 
 
 }

@@ -68,7 +68,7 @@ const accountController = {
   createAccount: async (request,response) => {
     const regestrationToken = request.query.token;
     const registrationData = jwtManager.authorise(regestrationToken, process.env.REGISTRATION_KEY); // returns either data or false 
-    if(registrationData == false) {
+    if(!registrationData) {
       response.status(401).send("Token is either expired or invalid");
       // response.redirect("http://localhost:5000/account/registration-confirmation?success=false")
       // Line 74 will be tested only when the client side of the app is coded
@@ -99,7 +99,7 @@ const accountController = {
     const authToken = request.cookies.authToken;
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY); // returns data or false
 
-    if(authData == false) {
+    if(!authData) {
       response.status(401).send("Unauthorised");
       return;
     }
@@ -126,7 +126,7 @@ const accountController = {
   removeAccount: async( request, response ) => {
     const removalToken = request.query.token;
     const removalData = jwtManager.authorise(removalToken, process.env.REMOVAL_KEY);
-    if( removalData == false ) {
+    if( !removalData ) {
       // response.redirect( "http://localhost:5000/account/removal-confirmation?success=false" )
       response.status(401).send("Token is expired or invalid");
     }
@@ -173,11 +173,11 @@ const accountController = {
     }
 
     const hashedDatabasePassword = databaseResult[0].password;
-    const userID = databaseResult[0].user_id;
+    const userID = databaseResult[0].userID;
     
     const passwordComparison = await hashManager.compareHash(password, hashedDatabasePassword);
     
-    if( passwordComparison == false ) {
+    if( !passwordComparison) {
       response.status(401).send("Unauthenticated");
       return;
     }
@@ -188,7 +188,6 @@ const accountController = {
     }
 
     authToken = jwtManager.createJWT(credentials, process.env.AUTH_KEY,parseInt( process.env.AUTH_KEY_EXPIRE));
-    response.cookie("authToken", "");
     response.cookie("authToken", authToken);
     response.status(200).send("Authenticated");
     return;

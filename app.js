@@ -4,13 +4,15 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer);
+const io = new Server(httpServer, { cookie:true} );
 
 const accountRoute = require("./routes/accountRoute");
 const chatsRoute = require("./routes/chatsRoute");
+
+const chatsController = require("./controllers/chatsController");
+const messageController = require("./controllers/messageController");
 
 app.use(express.json()); // to access URL parameters
 app.use(cookieParser({httpOnly:true})); // client side JS can not access cookies
@@ -20,33 +22,17 @@ app.use("/chats", chatsRoute);
 
 
 
-io.on("connection", (socket) => {
-  console.log("Hellonhhhhh")
-  socket.emit("serverMessage","I am here !!");
-  console.log(sendEmail)
-
-  
+io.on("connection", async (socket) => {
+  const userID = await chatsController.connectToChats(socket); // + authorisation + error handling
+  if(!userID) {
+    return;
+  } 
+  await messageController(io, socket, userID);
+  return;
 });
 
+
 httpServer.listen(parseInt(process.env.PORT));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
