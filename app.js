@@ -1,5 +1,6 @@
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 const express = require("express");
 const { createServer } = require("http");
@@ -14,6 +15,10 @@ const chatsRoute = require("./routes/chatsRoute");
 const chatsController = require("./controllers/chatsController");
 const messageController = require("./controllers/messageController");
 
+app.use(cors( {
+  credentials: true,
+  origin: "http://localhost:5001"
+} ));
 app.use(express.json()); // to access URL parameters
 app.use(cookieParser({httpOnly:true})); // client side JS can not access cookies
 

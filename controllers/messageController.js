@@ -8,7 +8,7 @@ async function messageController(io, socket, userID){
     const userChats = socket.rooms;  // type Set
     const messageValidation = validationManager.messageValidation(message, userChats);
     if(!messageValidation) {
-      socket.emit("error", "Forged request");
+      socket.emit("error", JSON.stringify({message:"Forged request"}));
       return;
     }
     message.senderID = userID;
@@ -17,11 +17,11 @@ async function messageController(io, socket, userID){
 
     const databaseResult = await messageModel.createMessage(message);
     if(!databaseResult) {
-      socket.emit("error", "Internal server error");
+      socket.emit("error", JSON.stringify({message:"Internal server error"}));
       return;
     }
     const chatID = message.chatID;
-    io.to(chatID).emit("create-message", message);
+    io.to(chatID).emit("create-message", JSON.stringify(message));
     return;
   }
 
@@ -33,16 +33,16 @@ async function messageController(io, socket, userID){
     const userChats = socket.rooms;  // type Set
     const messageValidation = validationManager.messageValidation(message,userChats);
     if(!messageValidation) {
-      socket.emit("error", "Forged request");
+      socket.emit("error", JSON.stringify({message:"Forged request"}));
       return;
     }
     const updatedMessage = await messageModel.updateMessage(message);
     if(!updatedMessage) {
-      socket.emit("error", "Internal server error or Forged request");
+      socket.emit("error", JSON.stringify({message:"Internal server error or the request is forged"}));
       return;
     }
     const chatID = updatedMessage.chatID;
-    io.to(chatID).emit("update-message", updatedMessage);
+    io.to(chatID).emit("update-message", JSON.stringify(updatedMessage));
     return;
   }
 
