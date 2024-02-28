@@ -8,8 +8,4 @@ router.delete("/", chatsController.removeChat ) // remove a chat
 
 router.get("/search", chatsController.searchUsers) // returns an array of users
 
-
-
-
-
 module.exports = router;

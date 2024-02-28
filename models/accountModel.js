@@ -22,10 +22,6 @@ const AccountModel = {
       }
   },
 
-
-
-
-
   createAccount: async (user_id, username,email, password) => {
     let connection;
     const connectionObject = configuration.database.connectionObject();
@@ -42,9 +38,6 @@ const AccountModel = {
     }
   },
 
-
-
-
   removeAccount: async (user_id) => {
     let connection;
     const connectionObject = configuration.database.connectionObject();
@@ -60,10 +53,6 @@ const AccountModel = {
       connection.end();
     }
   },
-
-
-
-
 
   createSession: async (email) => {
     let connection;
@@ -83,24 +72,3 @@ const AccountModel = {
 }
 
 module.exports=AccountModel;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

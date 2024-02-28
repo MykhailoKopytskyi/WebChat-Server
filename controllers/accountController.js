@@ -48,7 +48,6 @@ const accountController = {
     }
     const URL = `http://localhost:${process.env.PORT}/account/registration-confirmation?token=${registrationToken}`;
 
-    
     emailManager.sendEmail(email, "Registration", URL)
     .then( () => {
       response.status(200).json({message: "Click on the link we sent you via email"});
@@ -60,40 +59,20 @@ const accountController = {
     } )
   } ,
 
-
-
-
-
-
   createAccount: async (request,response) => {
     const regestrationToken = request.query.token;
     const registrationData = jwtManager.authorise(regestrationToken, process.env.REGISTRATION_KEY); // returns either data or false 
     if(!registrationData) {
-      response.status(401).json({error: "Unauthorised", message: "Token is either expired or invalid"});
-      // response.redirect("http://localhost:5000/account/registration-confirmation?success=false")
-      // Line 74 will be tested only when the client side of the app is coded
-      // For now I will simplify down to Line 73
+      response.redirect(`http://localhost:5001/registration-confirmation?success=false`);
       return;
     }
     const decryptedPassword = encryptionManager.decrypt(registrationData.password, process.env.PASSWORD_ENCRYPTION_KEY);
     const hashedPassword = await hashManager.hash(decryptedPassword);
     const uuid = crypto.randomUUID();
     const databaseResult = await accountModel.createAccount(uuid, registrationData.username, registrationData.email, hashedPassword);
-    // response.redirect(`http://localhost:5000/account/registration-confirmation?success=${databaseResult}`);
-    // Line 83 will be tested only when the client side of the app is coded
-    // For now I will simplify down to Lines 86-91
-    if(databaseResult) {
-      response.status(200).json({message: "Account was created successfully"});
-      return;
-    }
-    response.status(500).json({error: "Internal server error", message: "Account was not created. Try again"});
+    response.redirect(`http://localhost:5001/registration-confirmation?success=${databaseResult}`);
     return;
   },
-
-
-
-
-
 
   manageAccountRemoval: async (request, response) => {
     const authToken = request.cookies.authToken;
@@ -119,39 +98,36 @@ const accountController = {
   } )
   },
 
-
-
-
-
   removeAccount: async( request, response ) => {
     const removalToken = request.query.token;
     const removalData = jwtManager.authorise(removalToken, process.env.REMOVAL_KEY);
     if( !removalData ) {
-      // response.redirect( "http://localhost:5000/account/removal-confirmation?success=false" )
-      response.status(401).json({error: "Unauthorised", message: "Token is either expired or invalid"})
+      response.redirect( "http://localhost:5000/removal-confirmation?success=false" )
+      response.status(401).json({error: "Unauthorised", message: "Token is either expired or invalid"});
+      return;
     }
     const userID = removalData.userID;
     const databaseResult = await accountModel.removeAccount(userID);
-    // response.redirect(`http://localhost:5000/account/removal-confirmation?success=${databaseResult}`);
-    if( databaseResult ) {
-      response.cookie("authToken", "");
-      response.status(200).json({message: "Account has been removed successfully"});
-      return;
+    if(!databaseResult){
+      response.redirect(`http://localhost:5001/removal-confirmation?success=${databaseResult}`);
     }
-    response.status(500).json({error: "Internal server error", message: "Account has not been removed. Try again"});
+    else {
+      response.cookie("authToken", "");
+      response.redirect(`http://localhost:5001/removal-confirmation?success=${databaseResult}`);
+    }
     return;
   },
-
-
-
-
-
-
 
   createSession: async (request,response) => {
     let authToken = request.cookies.authToken;
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
     if( authData != false ) {
+      const doesUserExist = await accountModel.createSession(authData.email);
+      if(doesUserExist.length == 0) { // i.e. the user does not exist
+        response.cookie("authToken", "");
+        response.status(400).json({error: "Bad request", message: "The user does not exist"});
+        return;
+      }
       response.status(200).json({message: "Authenticated"});
       return;
     }
@@ -162,13 +138,13 @@ const accountController = {
     const passwordValidation = validationManager.passwordValidation(password);
 
     if( emailValidation == false || passwordValidation == false ) {
-      response.status(400).json({error: "Bad request", message: "Credentials do not meet the format"});
+      response.status(400).json({error: "Bad request", message: "Credentials do not meet the format or empty"});
       return;
     }
 
     const databaseResult = await accountModel.createSession(email, password);
     if(databaseResult.length == 0) {
-      response.status(401).json({error: "Unauthorised", meesage: "Authentication failed"});
+      response.status(401).json({error: "Unauthorised", message: "Authentication failed"});
       return;
     }
 
@@ -178,7 +154,7 @@ const accountController = {
     const passwordComparison = await hashManager.compareHash(password, hashedDatabasePassword);
     
     if( !passwordComparison) {
-      response.status(401).json({error: "Unauthorised", meesage: "Authentication failed"});
+      response.status(401).json({error: "Unauthorised", message: "Authentication failed"});
       return;
     }
 
@@ -193,9 +169,6 @@ const accountController = {
     return;
   },
 
-
-
-
   removeSession: async( request, response ) => {
     response.cookie("authToken", "");
     response.status(200).json({message:"Logged out successfully"});
@@ -203,29 +176,4 @@ const accountController = {
   }
 }
 
-
 module.exports = accountController;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

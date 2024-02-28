@@ -10,7 +10,6 @@ function createJWT(dataObject, key, expiration) {
   }
 }
 
-
 function authorise(token, key) {
   try {
     const verifiedData = jwt.verify(token, key);

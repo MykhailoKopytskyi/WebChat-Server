@@ -1,6 +1,5 @@
 const crypto = require("crypto");
 
-
 function encrypt(plaintext, encryptionKey) {
   if( !plaintext || !encryptionKey ) {
     return false;

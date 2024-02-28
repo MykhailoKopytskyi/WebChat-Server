@@ -1,7 +1,6 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-
 const configuration = {
   emailManagement:{
     transporter: () => {
@@ -40,6 +39,5 @@ const configuration = {
   }
  
 }
-
 
 module.exports = configuration;

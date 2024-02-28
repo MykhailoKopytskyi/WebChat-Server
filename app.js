@@ -1,13 +1,15 @@
 require("dotenv").config();
+const path = require("path");
 const cookieParser = require("cookie-parser");
-const cors = require("cors");
 
 const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cookie:true} );
+const io = new Server(httpServer, { 
+  cookie:true,
+} );
 
 const accountRoute = require("./routes/accountRoute");
 const chatsRoute = require("./routes/chatsRoute");
@@ -15,17 +17,15 @@ const chatsRoute = require("./routes/chatsRoute");
 const chatsController = require("./controllers/chatsController");
 const messageController = require("./controllers/messageController");
 
-app.use(cors( {
-  credentials: true,
-  origin: "http://localhost:5001"
-} ));
+app.use( "/", express.static("public") );
 app.use(express.json()); // to access URL parameters
 app.use(cookieParser({httpOnly:true})); // client side JS can not access cookies
 
 app.use("/account", accountRoute);
 app.use("/chats", chatsRoute);
-
-
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 io.on("connection", async (socket) => {
   const userID = await chatsController.connectToChats(socket); // + authorisation + error handling
@@ -36,11 +36,4 @@ io.on("connection", async (socket) => {
   return;
 });
 
-
 httpServer.listen(parseInt(process.env.PORT));
-
-
-
-
-
-

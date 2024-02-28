@@ -35,15 +35,12 @@ const messageValidation = (message,userChats) => {
     return false; // forged request
   }
   const chatID = message.chatID;
-  console.log(chatID)
   for( let userChat of userChats ) { // iterate over the chats user is connected to
     if(userChat == chatID) { // if the user is connected to the chat it is sending message to
-      console.log(userChat)
       return true;
     }
   }
   return false;
 }
-
 
 module.exports={ emailValidation,passwordValidation, usernameValidation, messageValidation };

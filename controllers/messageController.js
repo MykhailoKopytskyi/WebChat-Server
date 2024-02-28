@@ -1,14 +1,14 @@
 const messageModel = require("../models/messageModel");
 const validationManager = require("../utils/validationManager");
 
-
 async function messageController(io, socket, userID){
 
   const createMessage = async (message) => {
+    message = JSON.parse(message);
     const userChats = socket.rooms;  // type Set
     const messageValidation = validationManager.messageValidation(message, userChats);
     if(!messageValidation) {
-      socket.emit("error", JSON.stringify({message:"Forged request"}));
+      socket.emit("error", JSON.stringify({error:"Bad request", message:"Forged request"}));
       return;
     }
     message.senderID = userID;
@@ -17,7 +17,7 @@ async function messageController(io, socket, userID){
 
     const databaseResult = await messageModel.createMessage(message);
     if(!databaseResult) {
-      socket.emit("error", JSON.stringify({message:"Internal server error"}));
+      socket.emit("error", JSON.stringify({ error: "Internal server error", message:"Message was not saved. Try to send again"}));
       return;
     }
     const chatID = message.chatID;
@@ -25,20 +25,17 @@ async function messageController(io, socket, userID){
     return;
   }
 
-
-
-
-
   const updateMessage = async (message) => {
+    message = JSON.parse(message);
     const userChats = socket.rooms;  // type Set
     const messageValidation = validationManager.messageValidation(message,userChats);
     if(!messageValidation) {
-      socket.emit("error", JSON.stringify({message:"Forged request"}));
+      socket.emit("error", JSON.stringify({ error:"Bad request", message:"Forged request"}));
       return;
     }
     const updatedMessage = await messageModel.updateMessage(message);
     if(!updatedMessage) {
-      socket.emit("error", JSON.stringify({message:"Internal server error or the request is forged"}));
+      socket.emit("error", JSON.stringify({error: "Internal server error", message:"Message was not updated. Try to send again"}));
       return;
     }
     const chatID = updatedMessage.chatID;
@@ -46,12 +43,8 @@ async function messageController(io, socket, userID){
     return;
   }
 
-
-
   socket.on("create-message", createMessage);
   socket.on("update-message", updateMessage);
 }
-
-
 
 module.exports = messageController;

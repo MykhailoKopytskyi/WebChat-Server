@@ -1,11 +1,7 @@
 const configuration = require("../config/config");
 const mysql2 = require("mysql2/promise");
 
-
-
-
 const messageModel = {
-
   createMessage: async (message) => {
     let connection;
     const connectionObject = configuration.database.connectionObject();
@@ -24,14 +20,15 @@ const messageModel = {
     }
   },
 
-
   updateMessage: async (message) => {
     let connection;
     const connectionObject = configuration.database.connectionObject();
     try {
       connection = await mysql2.createConnection( connectionObject );
+      connection.beginTransaction()
       await connection.execute("UPDATE Message SET status='viewed' WHERE message_id=? ;", [ message.messageID]); 
       const [messageArray, fields] = await connection.execute("SELECT message_id as messageID, sender_id as senderID, chat_id as chatID, message_text as messageText, send_time as sendTime, status FROM Message WHERE message_id=? ;", [message.messageID]);
+      connection.commit()
       if(messageArray.length == 0) {
         return false;
       }
@@ -45,8 +42,6 @@ const messageModel = {
       connection.end();
     }
   },
-
 }
-
 
 module.exports = messageModel;

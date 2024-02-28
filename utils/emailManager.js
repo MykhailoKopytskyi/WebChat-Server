@@ -1,6 +1,5 @@
 const configuration = require("../config/config");
 
-
 function sendEmail( recipientAddress, keyWord, URL  ) {
   return new Promise( (resolve, reject) => {
     const transporter = configuration.emailManagement.transporter();
@@ -15,5 +14,4 @@ function sendEmail( recipientAddress, keyWord, URL  ) {
   } )
 }
 
-
-  module.exports = {sendEmail};
+module.exports = {sendEmail};

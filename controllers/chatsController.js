@@ -5,10 +5,7 @@ const jwtManager = require("../utils/jwtManager");
 const chatIDManager = require("../utils/chatIDManager");
 const chatsModel = require("../models/chatsModel");
 
-
-
 const chatsController = {
-
 
   createChat: async (request,response) => {
     const authToken = request.cookies.authToken;
@@ -33,9 +30,6 @@ const chatsController = {
     return;
   },
 
-
-  
-
   removeChat: async (request, response) => {
     const authToken = request.cookies.authToken;
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
@@ -57,8 +51,6 @@ const chatsController = {
     response.status(200).json({message: "Chat has been successfully removed"});
     return;
   },
-
-
 
   searchUsers: async(request, response) => {
     const authToken = request.cookies.authToken;
@@ -83,8 +75,6 @@ const chatsController = {
     return;
   },
 
-
-
   connectToChats: async (socket) =>{
     let authToken;
     try {
@@ -92,21 +82,21 @@ const chatsController = {
       authToken = cookie.parse(cookies).authToken;
     }
     catch(e) {
-      socket.emit("error", JSON.stringify({message:"Unauthorised"}));
+      socket.emit("error", JSON.stringify({error: "Unauthorised", message:"Log in to the account"}));
       socket.disconnect();
       return false;
     }
   
     const authData = jwtManager.authorise(authToken, process.env.AUTH_KEY);
     if( !authData ) {
-      socket.emit("error", JSON.stringify({message:"Unauthorised"}));
+      socket.emit("error", JSON.stringify({error: "Unauthorised" ,message:"Token has expired"}));
       socket.disconnect();
       return false;
     }
     const userID = authData.userID;
     const dataSetup = await chatsModel.connectToChats(userID);
     if( !dataSetup ) {
-      socket.emit("error", JSON.stringify({message:"Internal server error"}));
+      socket.emit("error", JSON.stringify({ error:"Internal server error", message:"Could not connect to the server"}));
       socket.disconnect();
       return false;
     }
@@ -118,11 +108,6 @@ const chatsController = {
     socket.emit("initial-setup", JSON.stringify(dataSetup));
     return userID;
   } 
-
-
-
-
 }
-
 
 module.exports = chatsController;
