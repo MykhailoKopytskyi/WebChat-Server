@@ -63,14 +63,14 @@ const accountController = {
     const regestrationToken = request.query.token;
     const registrationData = jwtManager.authorise(regestrationToken, process.env.REGISTRATION_KEY); // returns either data or false 
     if(!registrationData) {
-      response.redirect(`http://localhost:5001/registration-confirmation?success=false`);
+      response.redirect(`http://localhost:${process.env.PORT}/registration-confirmation?success=false`);
       return;
     }
     const decryptedPassword = encryptionManager.decrypt(registrationData.password, process.env.PASSWORD_ENCRYPTION_KEY);
     const hashedPassword = await hashManager.hash(decryptedPassword);
     const uuid = crypto.randomUUID();
     const databaseResult = await accountModel.createAccount(uuid, registrationData.username, registrationData.email, hashedPassword);
-    response.redirect(`http://localhost:5001/registration-confirmation?success=${databaseResult}`);
+    response.redirect(`http://localhost:${process.env.PORT}/registration-confirmation?success=${databaseResult}`);
     return;
   },
 
@@ -86,7 +86,7 @@ const accountController = {
       userID: authData.userID
     }
     const removalToken = jwtManager.createJWT(credentials, process.env.REMOVAL_KEY, parseInt(process.env.REMOVAL_KEY_EXPIRE));
-    const URL = `http://localhost:5000/account/removal-confirmation?token=${removalToken}`;
+    const URL = `http://localhost:${process.env.PORT}/account/removal-confirmation?token=${removalToken}`;
     emailManager.sendEmail( authData.email, "Removal of account", URL )
     .then( () => {
       response.status(200).json({message: "Click on the link we sent you via email"});
@@ -102,18 +102,18 @@ const accountController = {
     const removalToken = request.query.token;
     const removalData = jwtManager.authorise(removalToken, process.env.REMOVAL_KEY);
     if( !removalData ) {
-      response.redirect( "http://localhost:5000/removal-confirmation?success=false" )
+      response.redirect( `http://localhost:${process.env.PORT}/removal-confirmation?success=false` )
       response.status(401).json({error: "Unauthorised", message: "Token is either expired or invalid"});
       return;
     }
     const userID = removalData.userID;
     const databaseResult = await accountModel.removeAccount(userID);
     if(!databaseResult){
-      response.redirect(`http://localhost:5001/removal-confirmation?success=${databaseResult}`);
+      response.redirect(`http://localhost:${process.env.PORT}/removal-confirmation?success=${databaseResult}`);
     }
     else {
       response.cookie("authToken", "");
-      response.redirect(`http://localhost:5001/removal-confirmation?success=${databaseResult}`);
+      response.redirect(`http://localhost:${process.env.PORT}/removal-confirmation?success=${databaseResult}`);
     }
     return;
   },
