@@ -12,12 +12,21 @@ const AccountModel = {
         if( rows.length  == 0) { // If nothing is found, hence, email and username are unique
           return true;
         }
+        console.log("rows")
+        console.log(rows)
+
+        console.log("connection")
+        console.log(connection)
         return false;
       }
       catch(e) {
+        console.log("connection")
+        console.log(connection)
         return false;
       }
       finally {
+        console.log("connection")
+        console.log(connection)
           connection.end(); // Close a DB connection
       }
   },
