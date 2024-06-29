@@ -20,8 +20,13 @@ const AccountModel = {
         return false;
       }
       catch(e) {
+
+        console.log("error")
+        console.log(e)
+
         console.log("connection")
         console.log(connection)
+
         return false;
       }
       finally {
